@@ -20,7 +20,7 @@ int main() {
             break;
         std::cout << "state = " << state << std::endl;
         std::cout << "alpha = " << *alpha << std::endl;
-        sleep(1);
+        // sleep(0.3);
     }
     assert(fan.power_off());
 }

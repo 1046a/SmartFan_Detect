@@ -9,7 +9,11 @@
 #include "smart_fan.hpp"
 
 
-SmartFan::SmartFan(): _state(false), _iter(10), _idleness(5) {}
+SmartFan::SmartFan(): _state(false), _iter(10), _idleness(5) {
+#ifdef GUI
+    cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
+#endif
+}
 
 bool SmartFan::power_up() {
     _capture.open(0); 
@@ -21,13 +25,13 @@ bool SmartFan::power_off() {
     return true;
 }
 
+
 std::pair<int, int> SmartFan::_detect() {
     assert(_capture.isOpened());
     cv::Mat frame;
     std::vector<cv::Rect> rects;
 
     // _capture.open(0);
-    cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
     clock_t before = clock();
 
     int iter = _iter;
@@ -39,14 +43,16 @@ std::pair<int, int> SmartFan::_detect() {
         for (size_t i = 0; i < location.size(); ++i)
             std::cout << location[i].x + location[i].width / 2 << ' ' << location[i].y + location[i].height / 2 << ' ' << location[i].width << ' ' << location[i].height << std::endl;
 
+#ifdef GUI
         for (size_t i = 0; i < location.size(); ++i) {
-            cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
-            cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
+            // cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
+            // cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
             cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
         }
-        // cv::imshow("Display window", frame);
+        cv::imshow("Display window", frame);
         if (cv::waitKey(10) == 27)
             break;
+#endif
         // std::cerr << "Iter = " << iter << std::endl;
     }
 
@@ -198,8 +204,7 @@ int SmartFan::state(double *alpha) {
 }
 
 double SmartFan::_get_angle(int d) {
-    std::cout << "d = " << d << " angle = " << atan2(512 / tan(_theta / 2), d) << std::endl;
-    return atan2(512 / tan(_theta / 2), d);
+    return atan2(d, 512 / tan(_theta / 2));
 }
 
 void SmartFan::set_iter(int iter) { _iter = iter; }
