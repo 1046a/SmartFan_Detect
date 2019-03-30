@@ -9,9 +9,7 @@
 #include "smart_fan.hpp"
 
 
-SmartFan::SmartFan() {
-
-}
+SmartFan::SmartFan(): _iter(10), _idleness(5) {}
 
 bool SmartFan::power_up() {
     _capture.open(0); 
@@ -23,13 +21,15 @@ bool SmartFan::power_off() {
     return true;
 }
 
-std::pair<int, int> SmartFan::detect(int iter = 10) {
+std::pair<int, int> SmartFan::_detect() {
     assert(_capture.isOpened());
     cv::Mat frame;
     std::vector<cv::Rect> rects;
 
     cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
     clock_t before = clock();
+
+    int iter = _iter;
     while (iter-- && _capture.read(frame)) {
 
         std::vector<cv::Rect> location = _dectector(frame);
@@ -162,9 +162,42 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
         }
     }
 
-    throw;
-    // return std::make_pair(x / (int)points.size(), y / (int)points.size());
+    __builtin_unreachable();
 }
+
+int SmartFan::state(double *alpha) {
+    std::pair<int, int> position = _detect();    
+    
+    if (position.first == 7122) {
+        if (++_idle == _idleness) {
+            _idle = 0;
+            _state = false; 
+            return 0;
+        }
+        *alpha = 0.0;
+        return 2;
+    } else {
+        _idle = 0;
+        if (!_state) {
+            _state = true;
+            *alpha = 0.0;
+            return 1;
+        } else {
+            int d = position.first - 512;
+            *alpha = _get_angle(d);
+            return 2;
+        }
+    }
+    __builtin_unreachable();
+}
+
+double SmartFan::_get_angle(int d) {
+    return atan2(512 * tan(1.0 / (_theta / 2)), d);
+}
+
+void SmartFan::set_iter(int iter) { _iter = iter; }
+void SmartFan::set_idleness(int idleness) { _idleness = idleness; }
+void SmartFan::set_theta(double theta) { _theta = theta; }
 
 SmartFan _fan;
 
@@ -178,4 +211,16 @@ bool power_off() {
 
 int state(double *a) {
     return _fan.state(a);
+}
+
+void set_iter(int iter) {
+    _fan.set_iter(iter);
+}
+
+void set_idleness(int idleness) {
+    _fan.set_idleness(idleness);
+}
+
+void set_theta(double theta) {
+    _fan.set_theta(theta);
 }

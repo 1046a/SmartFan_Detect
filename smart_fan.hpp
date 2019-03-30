@@ -18,17 +18,27 @@ public:
     bool power_up();
     bool power_off();
     int state(double*);
+    void set_iter(int);
+    void set_idleness(int);
+    void set_theta(double);
 
 private:
-    std::pair<int, int> _detect(int);
+    bool _state;
+    int _idle, _iter, _idleness;
+    double _theta;
+    double _get_angle(int);
+    std::pair<int, int> _detect();
     std::pair<int, int> _KNN(std::vector<cv::Rect>);
     cv::VideoCapture _capture;
     Dectector _dectector;
 };
 
+
 extern "C" bool power_up();
 extern "C" bool power_off();
-extern "C" int detect(int);
 extern "C" int state(double*);
+extern "C" void set_iter(int);
+extern "C" void set_idleness(int);
+extern "C" void set_theta(double);
 
 #endif
