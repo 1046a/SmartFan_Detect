@@ -172,6 +172,8 @@ int SmartFan::state(double *alpha) {
     // std::cout << "x = " << position.first << " y = " << position.second << std::endl;
 
     if (position.first == 7122) {
+        if (!_state) 
+            return 3;
         if (++_idle == _idleness) {
             _idle = 0;
             _state = false; 
