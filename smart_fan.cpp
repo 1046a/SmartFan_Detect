@@ -23,8 +23,7 @@ bool SmartFan::power_off() {
     return true;
 }
 
-<<<<<<< HEAD
-std::pair<int, int> SmartFan::detect(int iter) {
+std::pair<int, int> SmartFan::detect(int iter = 10) {
     assert(_capture.isOpened());
     cv::Mat frame;
     std::vector<cv::Rect> rects;
@@ -45,63 +44,73 @@ std::pair<int, int> SmartFan::detect(int iter) {
             // break;
     }
 
-    std::cerr << "Time elapsed: " << 1.0 * (clock() - before) / CLOCKS_PER_SEC << std::endl;
+    // std::cerr << "Time elapsed: " << 1.0 * (clock() - before) / CLOCKS_PER_SEC << std::endl;
 
-    return _KNN(rects);
+    std::pair<int, int> res = _KNN(rects);
+    // std::cout << "x = " << res.first << " y = " << res.second << std::endl;
+
+    return res;
 }
 
 std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
-    std::cerr << "points.size() = " << (int)points.size() << std::endl;
-    std::mt19937 rng(7122);
+    if (points.empty())
+        return std::make_pair(7122, 7122);
+    // std::cerr << "points.size() = " << (int)points.size() << std::endl;
+    // std::mt19937 rng(7122);
 
-    auto dist = [&](std::pair<double, double> a, cv::Rect b) -> double {
-        return hypot(a.first - b.x, a.second - b.y);
-    };
+    // auto dist = [&](std::pair<double, double> a, cv::Rect b) -> double {
+        // return hypot(a.first - b.x, a.second - b.y);
+    // };
 
-    for (int k = 1; k <= 2; ++k) {
-        std::shuffle(points.begin(), points.end(), rng);
-        std::vector<std::pair<double, double>> centers;
+    // for (int k = 1; k <= 2; ++k) {
+        // std::shuffle(points.begin(), points.end(), rng);
+        // std::vector<std::pair<double, double>> centers;
 
-        for (size_t i = 0; i < k; ++i)
-            centers.emplace_back(points[i].x, points[i].y);
+        // for (size_t i = 0; i < k; ++i)
+            // centers.emplace_back(points[i].x, points[i].y);
 
-        while (true) {
-            std::vector<int> choose(points.size(), -1);
-            for (size_t i = 0; i < points.size(); ++i) {
-                double mdist = 1e9;
-                for (size_t j = 0; j < k; ++j) {
-                    if (dist(centers[j], points[i]) < mdist) {
-                        mdist = dist(centers[j], points[i]);
-                        choose[i] = j;
-                    }
-                }
-            }
+        // while (true) {
+            // std::vector<int> choose(points.size(), -1);
+            // for (size_t i = 0; i < points.size(); ++i) {
+                // double mdist = 1e9;
+                // for (size_t j = 0; j < k; ++j) {
+                    // if (dist(centers[j], points[i]) < mdist) {
+                        // mdist = dist(centers[j], points[i]);
+                        // choose[i] = j;
+                    // }
+                // }
+            // }
 
-            std::vector<std::pair<double, double>> ncenters(k);
-            std::vector<int> counts(k);
-            for (size_t i = 0; i < points.size(); ++i) {
-                ncenters[choose[i]].first += points[i].x;
-                ncenters[choose[i]].second += points[i].y;
-                ++counts[choose[i]];
-            }
-            bool diff = false;
-            for (size_t i = 0; i < k; ++i) {
-                if (counts[i] == 0) {
-                    std::cerr << "failed when k = " << k << std::endl;
-                    throw;
-                }
-                ncenters[i].first /= counts[i];
-                ncenters[i].second /= counts[i];
+            // std::vector<std::pair<double, double>> ncenters(k);
+            // std::vector<int> counts(k);
+            // for (size_t i = 0; i < points.size(); ++i) {
+                // ncenters[choose[i]].first += points[i].x;
+                // ncenters[choose[i]].second += points[i].y;
+                // ++counts[choose[i]];
+            // }
+            // bool diff = false;
+            // for (size_t i = 0; i < k; ++i) {
+                // if (counts[i] == 0) {
+                    // std::cerr << "failed when k = " << k << std::endl;
+                    // throw;
+                // }
+                // ncenters[i].first /= counts[i];
+                // ncenters[i].second /= counts[i];
 
                 // std::cerr << "center = " << centers[i].first << ' ' << centers[i].second << std::endl;
                 // std::cerr << "ncenter = " << ncenters[i].first << ' ' << ncenters[i].second << std::endl;
 
-                diff |= fabs(ncenters[i].first - centers[i].first) > 1e-7 ||
-                        fabs(ncenters[i].second - centers[i].second) > 1e-7;
-            }
-            if (!diff)
-                break;
-        }
+                // diff |= fabs(ncenters[i].first - centers[i].first) > 1e-7 ||
+                        // fabs(ncenters[i].second - centers[i].second) > 1e-7;
+            // }
+            // if (!diff)
+                // break;
+        // }
+    // }
+    int x = 0, y = 0;
+    for (size_t i = 0; i < points.size(); ++i) {
+        x += points[i].x;
+        y += points[i].y;
     }
-    return std::make_pair(1, 1);
+    return std::make_pair(x / (int)points.size(), y / (int)points.size());
 }

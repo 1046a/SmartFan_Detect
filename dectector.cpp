@@ -12,7 +12,7 @@ std::vector<cv::Rect> Dectector::_detect(const cv::Mat &img, cv::CascadeClassifi
     cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
     std::vector<cv::Rect> res;
-    cls.detectMultiScale(gray, res, 1.15);
+    cls.detectMultiScale(gray, res, 1.20);
     return res;
 }
 
