@@ -1,3 +1,6 @@
+#ifndef DECTECTOR_HPP_INCLUDED
+#define DECTECTOR_HPP_INCLUDED
+
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -16,3 +19,5 @@ public:
     Dectector();
     std::vector<cv::Rect> operator()(const cv::Mat &);
 };
+
+#endif

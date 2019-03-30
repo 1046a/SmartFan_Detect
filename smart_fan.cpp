@@ -42,6 +42,7 @@ std::pair<int, int> SmartFan::detect(int iter = 10) {
         // cv::imshow("Display window", frame);
         // if (cv::waitKey(10) == 27)
             // break;
+        std::cerr << "Iter = " << iter << std::endl;
     }
 
     // std::cerr << "Time elapsed: " << 1.0 * (clock() - before) / CLOCKS_PER_SEC << std::endl;
@@ -113,4 +114,18 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
         y += points[i].y;
     }
     return std::make_pair(x / (int)points.size(), y / (int)points.size());
+}
+
+SmartFan _fan;
+
+bool power_up() {
+    return _fan.power_up();
+}
+
+bool power_off() {
+    return _fan.power_off();
+}
+
+int detect(int iter = 10) {
+    return _fan.detect(iter).first;
 }

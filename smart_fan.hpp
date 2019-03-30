@@ -1,3 +1,6 @@
+#ifndef SMART_FAN_HPP_INCLUDED
+#define SMART_FAN_HPP_INCLUDED
+
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -21,3 +24,9 @@ private:
     cv::VideoCapture _capture;
     Dectector _dectector;
 };
+
+extern "C" bool power_up();
+extern "C" bool power_off();
+extern "C" int detect(int);
+
+#endif
