@@ -9,7 +9,7 @@
 #include "smart_fan.hpp"
 
 
-SmartFan::SmartFan(): _iter(10), _idleness(5) {}
+SmartFan::SmartFan(): _state(false), _iter(10), _idleness(5) {}
 
 bool SmartFan::power_up() {
     _capture.open(0); 
@@ -26,7 +26,8 @@ std::pair<int, int> SmartFan::_detect() {
     cv::Mat frame;
     std::vector<cv::Rect> rects;
 
-    cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
+    // _capture.open(0);
+    // cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
     clock_t before = clock();
 
     int iter = _iter;
@@ -35,17 +36,17 @@ std::pair<int, int> SmartFan::_detect() {
         std::vector<cv::Rect> location = _dectector(frame);
         rects.insert(rects.end(), location.begin(), location.end());
 
-        for (size_t i = 0; i < location.size(); ++i)
-            std::cout << location[i].x << ' ' << location[i].y << ' ' << location[i].width << ' ' << location[i].height << std::endl;
+        // for (size_t i = 0; i < location.size(); ++i)
+            // std::cout << location[i].x << ' ' << location[i].y << ' ' << location[i].width << ' ' << location[i].height << std::endl;
 
         for (size_t i = 0; i < location.size(); ++i) {
             // cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
             // cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
-            cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
+            // cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
         }
-        cv::imshow("Display window", frame);
-        if (cv::waitKey(10) == 27)
-            break;
+        // cv::imshow("Display window", frame);
+        // if (cv::waitKey(10) == 27)
+            // break;
         // std::cerr << "Iter = " << iter << std::endl;
     }
 
@@ -54,6 +55,7 @@ std::pair<int, int> SmartFan::_detect() {
     std::pair<int, int> res = _KNN(rects);
     // std::cout << "x = " << res.first << " y = " << res.second << std::endl;
 
+    // _capture.release();
     return res;
 }
 
@@ -68,7 +70,7 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
     }
 
     auto dist = [&](std::pair<double, double> a, cv::Rect b) -> double {
-        return hypot(a.first - b.x, 0);
+        return abs(a.first - (b.x + b.width / 2));
     };
 
     std::mt19937 rng(7122);
@@ -101,8 +103,8 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
             std::vector<int> members(k);
             std::vector<std::pair<double, double>> npivot(k);
             for (size_t i = 0; i < points.size(); ++i) {
-                npivot[belong[i]].first += points[i].x;
-                npivot[belong[i]].second += points[i].y;
+                npivot[belong[i]].first += points[i].x + points[i].width / 2;
+                npivot[belong[i]].second += points[i].y + points[i].height / 2;
                 ++members[belong[i]];
             }
 
@@ -112,8 +114,8 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
                 if (members[i] == 0) {
                     std::cerr << "[Warning] KNN has group with 0 size" << std::endl;
                     int j = dis(rng);
-                    npivot[i].first = points[j].x;
-                    npivot[i].second = points[j].y;
+                    npivot[i].first = points[j].x + points[j].width / 2;
+                    npivot[i].second = points[j].y + points[j].height / 2;
                     continue;
                 }
                 npivot[i].first /= members[i];
@@ -167,7 +169,8 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
 
 int SmartFan::state(double *alpha) {
     std::pair<int, int> position = _detect();    
-    
+    // std::cout << "x = " << position.first << " y = " << position.second << std::endl;
+
     if (position.first == 7122) {
         if (++_idle == _idleness) {
             _idle = 0;
@@ -188,11 +191,13 @@ int SmartFan::state(double *alpha) {
             return 2;
         }
     }
+
     __builtin_unreachable();
 }
 
 double SmartFan::_get_angle(int d) {
-    return atan2(512 * tan(1.0 / (_theta / 2)), d);
+    std::cout << "d = " << d << " angle = " << atan2(512 / tan(_theta / 2), d) << std::endl;
+    return atan2(512 / tan(_theta / 2), d);
 }
 
 void SmartFan::set_iter(int iter) { _iter = iter; }

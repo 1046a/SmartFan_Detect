@@ -1,14 +1,26 @@
 #include <cassert>
-#include <utility>
+#include <cmath>
 #include <iostream>
+#include <unistd.h>
+#include <utility>
 
 #include "smart_fan.hpp"
 
 
 int main() {
     SmartFan fan;
+    fan.set_iter(10);
+    fan.set_theta(0.25 * acos(-1));
+    fan.set_idleness(5);
     assert(fan.power_up());
-    std::pair<int, int> points = fan.detect(10);
-    std::cout << points.first << ' ' << points.second << std::endl;
+    while (true) {
+        double *alpha = new double();
+        int state = fan.state(alpha);
+        if (state == 0)
+            break;
+        std::cout << "state = " << state << std::endl;
+        std::cout << "alpha = " << *alpha << std::endl;
+        sleep(1);
+    }
     assert(fan.power_off());
 }
