@@ -1,0 +1,6 @@
+*example*
+*.swp
+images/
+*.DS_Store
+test
+bin/
