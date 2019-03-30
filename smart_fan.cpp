@@ -68,10 +68,11 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
     }
 
     auto dist = [&](std::pair<double, double> a, cv::Rect b) -> double {
-        return hypot(a.first - b.x, a.second - b.y);
+        return hypot(a.first - b.x, 0);
     };
 
     std::mt19937 rng(7122);
+    std::uniform_int_distribution<int> dis(0, (int)points.size() - 1);
 
     for (int k = 1; k <= (int)points.size(); ++k) {
         std::shuffle(points.begin(), points.end(), rng);
@@ -108,7 +109,13 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
             pbelong = belong;
 
             for (size_t i = 0; i < k; ++i) {
-                assert(members[i] > 0);
+                if (members[i] == 0) {
+                    std::cerr << "[Warning] KNN has group with 0 size" << std::endl;
+                    int j = dis(rng);
+                    npivot[i].first = points[j].x;
+                    npivot[i].second = points[j].y;
+                    continue;
+                }
                 npivot[i].first /= members[i];
                 npivot[i].second /= members[i];
             }
@@ -122,14 +129,18 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
 
         bool feasible = true;
 
+        std::cerr << "[DEBUG] KNN result when k = " << k << std::endl;
         for (size_t i = 0; i < k; ++i) {
             int x_max = -1e9, x_min = 1e9;
             for (size_t j = 0; j < nodes[i].size(); ++j) {
                 x_max = std::max(x_max, nodes[i][j].x);
                 x_min = std::min(x_min, nodes[i][j].x);
+                std::cerr << nodes[i][j].x << ' ';
             }
+            std::cerr << std::endl;
             feasible &= x_max - x_min <= 70;
         }
+
 
         if (feasible) {
             int res = 0;
