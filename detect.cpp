@@ -20,8 +20,19 @@ std::vector<cv::Rect_<int>> detect(const cv::Mat &img, cv::HOGDescriptor &cls) {
     cv::Mat gray; 
     cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
-    std::vector<cv::Rect_<int>> res;
-    cls.detectMultiScale(img, res, 0, cv::Size(4, 4), cv::Size(8, 8), 1.05, 2, false);
+    std::vector<cv::Rect> location;
+    std::vector<double> weight;
+    cls.detectMultiScale(img, location, weight, 0, cv::Size(4, 4), cv::Size(8, 8), 1.05, 2, false);
+
+    for (size_t i = 0; i < weight.size(); ++i)
+        std::cerr << weight[i] << ' ';
+    std::cerr << std::endl;
+
+    std::vector<cv::Rect> res;
+    for (size_t i = 0; i < weight.size(); ++i) {
+        if (weight[i] > 0.8) 
+            res.push_back(location[i]);
+    }
 
     return res;
 }
@@ -38,10 +49,13 @@ std::vector<cv::Rect> detect(const cv::Mat &img, Classifier &cls) {
 }
 
 int main() {
-    const std::string s = "images/people6.jpg";
+    const std::string s = "images/people2.jpg";
+    const std::string v = "images/video.mp4";
     cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
 
     cv::Mat img = cv::imread(s);
+    cv::VideoCapture capture;
+    capture.open(v);
 
     cv::CascadeClassifier face_detector(model["face"]);
     cv::CascadeClassifier upper_body_detector(model["upperbody"]);
