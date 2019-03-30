@@ -27,7 +27,7 @@ std::pair<int, int> SmartFan::_detect() {
     std::vector<cv::Rect> rects;
 
     // _capture.open(0);
-    // cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
     clock_t before = clock();
 
     int iter = _iter;
@@ -36,17 +36,17 @@ std::pair<int, int> SmartFan::_detect() {
         std::vector<cv::Rect> location = _dectector(frame);
         rects.insert(rects.end(), location.begin(), location.end());
 
-        // for (size_t i = 0; i < location.size(); ++i)
-            // std::cout << location[i].x << ' ' << location[i].y << ' ' << location[i].width << ' ' << location[i].height << std::endl;
+        for (size_t i = 0; i < location.size(); ++i)
+            std::cout << location[i].x + location[i].width / 2 << ' ' << location[i].y + location[i].height / 2 << ' ' << location[i].width << ' ' << location[i].height << std::endl;
 
         for (size_t i = 0; i < location.size(); ++i) {
-            // cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
-            // cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
-            // cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
+            cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
+            cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
+            cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
         }
         // cv::imshow("Display window", frame);
-        // if (cv::waitKey(10) == 27)
-            // break;
+        if (cv::waitKey(10) == 27)
+            break;
         // std::cerr << "Iter = " << iter << std::endl;
     }
 
@@ -80,7 +80,7 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
         std::shuffle(points.begin(), points.end(), rng);
         std::vector<std::pair<double, double>> pivot;
         for (size_t j = 0; j < k; ++j)
-            pivot.emplace_back(points[j].x, points[j].y);
+            pivot.emplace_back(points[j].x + points[j].width / 2, points[j].y + points[j].height / 2);
 
         std::vector<int> pbelong(points.size(), -1);
 
@@ -152,10 +152,10 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
             }
 
             int x = std::accumulate(nodes[res].begin(), nodes[res].end(), 0, [](int a, cv::Rect b) {
-                return a + b.x;
+                return a + b.x + b.width / 2;
             });
             int y = std::accumulate(nodes[res].begin(), nodes[res].end(), 0, [](int a, cv::Rect b) {
-                return a + b.y;
+                return a + b.y + b.height / 2;
             });
 
             std::cerr << "KNN find feasible solution with k = " << k << std::endl;
@@ -169,7 +169,7 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
 
 int SmartFan::state(double *alpha) {
     std::pair<int, int> position = _detect();    
-    // std::cout << "x = " << position.first << " y = " << position.second << std::endl;
+    std::cout << "x = " << position.first << " y = " << position.second << std::endl;
 
     if (position.first == 7122) {
         if (!_state) 
