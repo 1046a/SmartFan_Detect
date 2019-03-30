@@ -61,7 +61,7 @@ int main() {
     cv::CascadeClassifier upper_body_detector(model["upperbody"]);
     cv::CascadeClassifier lower_body_detector(model["lowerbody"]);
     cv::CascadeClassifier full_body_detector(model["fullbody"]);
-    cv::HOGDescriptor hog();
+    cv::HOGDescriptor hog;
     hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
     // cv::HOGDescriptor hog;
     // hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());

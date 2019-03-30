@@ -17,9 +17,10 @@ public:
     SmartFan();
     bool power_up();
     bool power_off();
-    std::pair<int, int> detect(int);
+    int state(double*);
 
 private:
+    std::pair<int, int> _detect(int);
     std::pair<int, int> _KNN(std::vector<cv::Rect>);
     cv::VideoCapture _capture;
     Dectector _dectector;
@@ -28,5 +29,6 @@ private:
 extern "C" bool power_up();
 extern "C" bool power_off();
 extern "C" int detect(int);
+extern "C" int state(double*);
 
 #endif

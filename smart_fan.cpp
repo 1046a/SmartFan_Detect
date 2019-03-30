@@ -176,6 +176,6 @@ bool power_off() {
     return _fan.power_off();
 }
 
-int detect(int iter = 10) {
-    return _fan.detect(iter).first;
+int state(double *a) {
+    return _fan.state(a);
 }
