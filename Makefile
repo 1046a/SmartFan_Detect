@@ -1,5 +1,5 @@
 CXX = clang++ 
-CFLAGS = `pkg-config --cflags --libs /usr/local/Cellar/opencv/4.0.1/lib/pkgconfig/opencv4.pc` -O3 -std=c++14
+CFLAGS = `pkg-config --cflags --libs /usr/local/Cellar/opencv/4.0.1/lib/pkgconfig/opencv4.pc` -O3 -std=c++14 -DGUI
 
 all: smartfan
 

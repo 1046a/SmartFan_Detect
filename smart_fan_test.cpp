@@ -11,7 +11,7 @@ int main() {
     SmartFan fan;
     fan.set_iter(10);
     fan.set_theta(0.25 * acos(-1));
-    fan.set_idleness(5);
+    fan.set_idleness(500);
     assert(fan.power_up());
     while (true) {
         double *alpha = new double();

@@ -31,7 +31,6 @@ std::pair<int, int> SmartFan::_detect() {
     cv::Mat frame;
     std::vector<cv::Rect> rects;
 
-    // _capture.open(0);
     clock_t before = clock();
 
     int iter = _iter;
@@ -41,27 +40,21 @@ std::pair<int, int> SmartFan::_detect() {
         rects.insert(rects.end(), location.begin(), location.end());
 
         for (size_t i = 0; i < location.size(); ++i)
-            std::cout << location[i].x + location[i].width / 2 << ' ' << location[i].y + location[i].height / 2 << ' ' << location[i].width << ' ' << location[i].height << std::endl;
+            std::cerr << location[i].x + location[i].width / 2 << ' ' << location[i].y + location[i].height / 2 << ' ' << location[i].width << ' ' << location[i].height << std::endl;
 
 #ifdef GUI
         for (size_t i = 0; i < location.size(); ++i) {
-            // cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
-            // cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
             cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
         }
         cv::imshow("Display window", frame);
         if (cv::waitKey(10) == 27)
             break;
 #endif
-        // std::cerr << "Iter = " << iter << std::endl;
     }
 
-    // std::cerr << "Time elapsed: " << 1.0 * (clock() - before) / CLOCKS_PER_SEC << std::endl;
-
+    std::cerr << "Time elapsed: " << 1.0 * (clock() - before) / CLOCKS_PER_SEC << std::endl;
     std::pair<int, int> res = _KNN(rects);
-    // std::cout << "x = " << res.first << " y = " << res.second << std::endl;
 
-    // _capture.release();
     return res;
 }
 
@@ -137,15 +130,12 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
 
         bool feasible = true;
 
-        std::cerr << "[DEBUG] KNN result when k = " << k << std::endl;
         for (size_t i = 0; i < k; ++i) {
             int x_max = -1e9, x_min = 1e9;
             for (size_t j = 0; j < nodes[i].size(); ++j) {
                 x_max = std::max(x_max, nodes[i][j].x);
                 x_min = std::min(x_min, nodes[i][j].x);
-                std::cerr << nodes[i][j].x << ' ';
             }
-            std::cerr << std::endl;
             feasible &= x_max - x_min <= 70;
         }
 
@@ -175,7 +165,7 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
 
 int SmartFan::state(double *alpha) {
     std::pair<int, int> position = _detect();    
-    std::cout << "x = " << position.first << " y = " << position.second << std::endl;
+    std::cerr << "x = " << position.first << " y = " << position.second << std::endl;
 
     if (position.first == 7122) {
         if (!_state) 
