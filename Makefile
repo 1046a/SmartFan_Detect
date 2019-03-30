@@ -13,7 +13,7 @@ webcam: webcam.cpp
 	$(CXX) $(CFLAGS) webcam.cpp -o bin/webcam
 
 smartfan: smart_fan.cpp dectector.cpp
-	$(CXX) $(CFLAGS) smart_fan.cpp dectector.cpp
+	$(CXX) $(CFLAGS) -shared -fPIC -o libsmartfan.so smart_fan.cpp dectector.cpp
 
 test: smart_fan.cpp smart_fan_test.cpp dectector.cpp
 	$(CXX) $(CFLAGS) smart_fan_test.cpp smart_fan.cpp dectector.cpp -o bin/test
