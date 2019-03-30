@@ -38,7 +38,6 @@ int main() {
     cv::CascadeClassifier face_detector(model["face"]);
 
     cv::Mat frame;
-
     while (capture.read(frame)) {
         if (frame.empty())
             break;

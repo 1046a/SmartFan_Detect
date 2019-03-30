@@ -23,6 +23,7 @@ bool SmartFan::power_off() {
     return true;
 }
 
+<<<<<<< HEAD
 std::pair<int, int> SmartFan::detect(int iter) {
     assert(_capture.isOpened());
     cv::Mat frame;
@@ -98,7 +99,6 @@ std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
                 diff |= fabs(ncenters[i].first - centers[i].first) > 1e-7 ||
                         fabs(ncenters[i].second - centers[i].second) > 1e-7;
             }
-
             if (!diff)
                 break;
         }
