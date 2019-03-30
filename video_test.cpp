@@ -16,59 +16,69 @@ std::map<std::string, std::string> model = {
     {"upperbody", "model/haarcascade_upperbody.xml"}
 };
 
-std::vector<cv::Rect_<int>> detect(const cv::Mat &img, cv::HOGDescriptor &cls) {
+std::vector<cv::Rect> detect(const cv::Mat &img, cv::HOGDescriptor &cls) {
     cv::Mat gray; 
     cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
     std::vector<cv::Rect> location;
     std::vector<double> weight;
-    cls.detectMultiScale(img, location, weight, 0, cv::Size(4, 4), cv::Size(8, 8), 1.05, 2, false);
+    cls.detectMultiScale(img, location, weight, 0, cv::Size(4, 4), cv::Size(16, 16), 1.05, 2, false);
 
-    for (size_t i = 0; i < weight.size(); ++i)
-        std::cerr << weight[i] << ' ';
-    std::cerr << std::endl;
+    // for (size_t i = 0; i < weight.size(); ++i)
+        // std::cerr << weight[i] << ' ';
+    // std::cerr << std::endl;
 
-    std::vector<cv::Rect> res;
-    for (size_t i = 0; i < weight.size(); ++i) {
-        if (weight[i] > 0.8) 
-            res.push_back(location[i]);
-    }
+    std::vector<cv::Rect> res = location;
+    // for (size_t i = 0; i < weight.size(); ++i) {
+        // if (weight[i] > 0.8) 
+            // res.push_back(location[i]);
+    // }
 
     return res;
 }
 
 template <class Classifier>
 std::vector<cv::Rect> detect(const cv::Mat &img, Classifier &cls) {
+
     cv::Mat gray; 
     cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
     std::vector<cv::Rect> res;
-    cls.detectMultiScale(gray, res);
+    cls.detectMultiScale(gray, res, 1.15);
 
     return res;
 }
 
 int main() {
-    const std::string s = "images/people2.jpg";
-    const std::string v = "images/video.mp4";
+    const std::string v = "images/video3.mp4";
     cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
 
-    cv::Mat img = cv::imread(s);
     cv::VideoCapture capture;
     capture.open(v);
 
     cv::CascadeClassifier face_detector(model["face"]);
+    cv::CascadeClassifier body_detector(model["upperbody"]);
+    cv::HOGDescriptor hog;
+    hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
 
     cv::Mat frame;
     while (capture.read(frame)) {
         if (frame.empty())
             break;
 
+        // std::vector<cv::Rect> people = detect(frame, hog);
+        std::vector<cv::Rect> body = detect(frame, body_detector);
         std::vector<cv::Rect> face = detect(frame, face_detector);
 
-        for (size_t i = 0; i < face.size(); ++i) {
-            cv::Point p(face[i].x + face[i].width / 2, face[i].y + face[i].height / 2);
-            cv::circle(frame, p, face[i].width / 2, cv::Scalar(255, 0, 0), 4);
+        // for (size_t i = 0; i < people.size(); ++i) {
+            // cv::rectangle(frame, people[i], cv::Scalar(255, 0, 0), 4);
+            // cv::Point p(face[i].x + face[i].width / 2, face[i].y + face[i].height / 2);
+            // cv::circle(frame, p, face[i].width / 2, cv::Scalar(255, 0, 0), 4);
+        // }
+        for (size_t i = 0; i < body.size(); ++i) {
+            cv::rectangle(frame, body[i], cv::Scalar(0, 255, 0), 4);
+            // cv::Point p(face[i].x + face[i].width / 2, face[i].y + face[i].height / 2);
+            // cv::circle(frame, p, face[i].width / 2, cv::Scalar(255, 0, 0), 4);
         }
 
         cv::imshow("Display window", frame);

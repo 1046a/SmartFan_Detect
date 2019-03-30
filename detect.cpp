@@ -22,7 +22,7 @@ std::vector<cv::Rect_<int>> detect(const cv::Mat &img, cv::HOGDescriptor &cls) {
 
     std::vector<cv::Rect> location;
     std::vector<double> weight;
-    cls.detectMultiScale(img, location, weight, 0, cv::Size(4, 4), cv::Size(8, 8), 1.05, 2, false);
+    cls.detectMultiScale(img, location, weight, 0, cv::Size(16, 16), cv::Size(8, 8), 1.05, 2, false);
 
     for (size_t i = 0; i < weight.size(); ++i)
         std::cerr << weight[i] << ' ';
@@ -50,19 +50,21 @@ std::vector<cv::Rect> detect(const cv::Mat &img, Classifier &cls) {
 
 int main() {
     const std::string s = "images/people2.jpg";
-    const std::string v = "images/video.mp4";
+    // const std::string v = "images/video.mp4";
     cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
 
     cv::Mat img = cv::imread(s);
-    cv::VideoCapture capture;
-    capture.open(v);
+    // cv::VideoCapture capture;
+    // capture.open(v);
 
     cv::CascadeClassifier face_detector(model["face"]);
     cv::CascadeClassifier upper_body_detector(model["upperbody"]);
     cv::CascadeClassifier lower_body_detector(model["lowerbody"]);
     cv::CascadeClassifier full_body_detector(model["fullbody"]);
-    cv::HOGDescriptor hog;
+    cv::HOGDescriptor hog();
     hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
+    // cv::HOGDescriptor hog;
+    // hog.setSVMDetector(cv::HOGDescriptor::getDefaultPeopleDetector());
 
     std::vector<cv::Rect> upper_bodies = detect(img, upper_body_detector);
     std::vector<cv::Rect> lower_bodies = detect(img, lower_body_detector);
