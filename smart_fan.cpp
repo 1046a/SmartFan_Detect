@@ -28,21 +28,25 @@ std::pair<int, int> SmartFan::detect(int iter = 10) {
     cv::Mat frame;
     std::vector<cv::Rect> rects;
 
-    // cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
     clock_t before = clock();
     while (iter-- && _capture.read(frame)) {
 
         std::vector<cv::Rect> location = _dectector(frame);
         rects.insert(rects.end(), location.begin(), location.end());
 
-        // for (size_t i = 0; i < location.size(); ++i) {
+        for (size_t i = 0; i < location.size(); ++i)
+            std::cout << location[i].x << ' ' << location[i].y << ' ' << location[i].width << ' ' << location[i].height << std::endl;
+
+        for (size_t i = 0; i < location.size(); ++i) {
             // cv::Point p(location[i].x + location[i].width / 2, location[i].y + location[i].height / 2);
             // cv::circle(frame, p, location[i].width / 2, cv::Scalar(255, 0, 0), 4);
-        // }
-        // cv::imshow("Display window", frame);
-        // if (cv::waitKey(10) == 27)
-            // break;
-        std::cerr << "Iter = " << iter << std::endl;
+            cv::rectangle(frame, location[i], cv::Scalar(255, 0, 0), 4);
+        }
+        cv::imshow("Display window", frame);
+        if (cv::waitKey(10) == 27)
+            break;
+        // std::cerr << "Iter = " << iter << std::endl;
     }
 
     // std::cerr << "Time elapsed: " << 1.0 * (clock() - before) / CLOCKS_PER_SEC << std::endl;
@@ -56,64 +60,99 @@ std::pair<int, int> SmartFan::detect(int iter = 10) {
 std::pair<int, int> SmartFan::_KNN(std::vector<cv::Rect> points) {
     if (points.empty())
         return std::make_pair(7122, 7122);
-    // std::cerr << "points.size() = " << (int)points.size() << std::endl;
-    // std::mt19937 rng(7122);
 
-    // auto dist = [&](std::pair<double, double> a, cv::Rect b) -> double {
-        // return hypot(a.first - b.x, a.second - b.y);
-    // };
-
-    // for (int k = 1; k <= 2; ++k) {
-        // std::shuffle(points.begin(), points.end(), rng);
-        // std::vector<std::pair<double, double>> centers;
-
-        // for (size_t i = 0; i < k; ++i)
-            // centers.emplace_back(points[i].x, points[i].y);
-
-        // while (true) {
-            // std::vector<int> choose(points.size(), -1);
-            // for (size_t i = 0; i < points.size(); ++i) {
-                // double mdist = 1e9;
-                // for (size_t j = 0; j < k; ++j) {
-                    // if (dist(centers[j], points[i]) < mdist) {
-                        // mdist = dist(centers[j], points[i]);
-                        // choose[i] = j;
-                    // }
-                // }
-            // }
-
-            // std::vector<std::pair<double, double>> ncenters(k);
-            // std::vector<int> counts(k);
-            // for (size_t i = 0; i < points.size(); ++i) {
-                // ncenters[choose[i]].first += points[i].x;
-                // ncenters[choose[i]].second += points[i].y;
-                // ++counts[choose[i]];
-            // }
-            // bool diff = false;
-            // for (size_t i = 0; i < k; ++i) {
-                // if (counts[i] == 0) {
-                    // std::cerr << "failed when k = " << k << std::endl;
-                    // throw;
-                // }
-                // ncenters[i].first /= counts[i];
-                // ncenters[i].second /= counts[i];
-
-                // std::cerr << "center = " << centers[i].first << ' ' << centers[i].second << std::endl;
-                // std::cerr << "ncenter = " << ncenters[i].first << ' ' << ncenters[i].second << std::endl;
-
-                // diff |= fabs(ncenters[i].first - centers[i].first) > 1e-7 ||
-                        // fabs(ncenters[i].second - centers[i].second) > 1e-7;
-            // }
-            // if (!diff)
-                // break;
-        // }
-    // }
     int x = 0, y = 0;
     for (size_t i = 0; i < points.size(); ++i) {
         x += points[i].x;
         y += points[i].y;
     }
-    return std::make_pair(x / (int)points.size(), y / (int)points.size());
+
+    auto dist = [&](std::pair<double, double> a, cv::Rect b) -> double {
+        return hypot(a.first - b.x, a.second - b.y);
+    };
+
+    std::mt19937 rng(7122);
+
+    for (int k = 1; k <= (int)points.size(); ++k) {
+        std::shuffle(points.begin(), points.end(), rng);
+        std::vector<std::pair<double, double>> pivot;
+        for (size_t j = 0; j < k; ++j)
+            pivot.emplace_back(points[j].x, points[j].y);
+
+        std::vector<int> pbelong(points.size(), -1);
+
+        while (true) {
+            std::vector<int> belong(points.size(), -1);
+            bool diff = false;
+            for (size_t i = 0; i < points.size(); ++i) {
+                double mdist = 1e9;
+                for (size_t j = 0; j < pivot.size(); ++j) {
+                    if (mdist > dist(pivot[j], points[i])) {
+                        mdist = dist(pivot[j], points[i]);
+                        belong[i] = j;
+                    }
+                }
+                diff |= belong[i] != pbelong[i];
+            }
+
+            if (!diff) break;
+
+            std::vector<int> members(k);
+            std::vector<std::pair<double, double>> npivot(k);
+            for (size_t i = 0; i < points.size(); ++i) {
+                npivot[belong[i]].first += points[i].x;
+                npivot[belong[i]].second += points[i].y;
+                ++members[belong[i]];
+            }
+
+            pbelong = belong;
+
+            for (size_t i = 0; i < k; ++i) {
+                assert(members[i] > 0);
+                npivot[i].first /= members[i];
+                npivot[i].second /= members[i];
+            }
+
+            pivot = npivot;
+        }
+        
+        std::vector<std::vector<cv::Rect>> nodes(k);
+        for (size_t i = 0; i < points.size(); ++i)
+            nodes[pbelong[i]].push_back(points[i]);
+
+        bool feasible = true;
+
+        for (size_t i = 0; i < k; ++i) {
+            int x_max = -1e9, x_min = 1e9;
+            for (size_t j = 0; j < nodes[i].size(); ++j) {
+                x_max = std::max(x_max, nodes[i][j].x);
+                x_min = std::min(x_min, nodes[i][j].x);
+            }
+            feasible &= x_max - x_min <= 70;
+        }
+
+        if (feasible) {
+            int res = 0;
+            for (size_t i = 0; i < k; ++i) {
+                if (nodes[i].size() > nodes[res].size())
+                    res = i;
+            }
+
+            int x = std::accumulate(nodes[res].begin(), nodes[res].end(), 0, [](int a, cv::Rect b) {
+                return a + b.x;
+            });
+            int y = std::accumulate(nodes[res].begin(), nodes[res].end(), 0, [](int a, cv::Rect b) {
+                return a + b.y;
+            });
+
+            std::cerr << "KNN find feasible solution with k = " << k << std::endl;
+
+            return std::make_pair(x / (int)nodes[res].size(), y / (int)nodes[res].size());
+        }
+    }
+
+    throw;
+    // return std::make_pair(x / (int)points.size(), y / (int)points.size());
 }
 
 SmartFan _fan;

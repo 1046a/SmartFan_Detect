@@ -66,15 +66,15 @@ int main() {
         if (frame.empty())
             break;
 
-        std::vector<cv::Rect> people = detect(frame, hog);
+        // std::vector<cv::Rect> people = detect(frame, hog);
         // std::vector<cv::Rect> body = detect(frame, body_detector);
         std::vector<cv::Rect> face = detect(frame, face_detector);
 
-        for (size_t i = 0; i < people.size(); ++i) {
-            cv::rectangle(frame, people[i], cv::Scalar(255, 0, 0), 4);
-            // cv::Point p(face[i].x + face[i].width / 2, face[i].y + face[i].height / 2);
-            // cv::circle(frame, p, face[i].width / 2, cv::Scalar(255, 0, 0), 4);
-        }
+        // for (size_t i = 0; i < people.size(); ++i) {
+            // cv::rectangle(frame, people[i], cv::Scalar(255, 0, 0), 4);
+            // // cv::Point p(face[i].x + face[i].width / 2, face[i].y + face[i].height / 2);
+            // // cv::circle(frame, p, face[i].width / 2, cv::Scalar(255, 0, 0), 4);
+        // }
         // for (size_t i = 0; i < body.size(); ++i) {
             // cv::rectangle(frame, body[i], cv::Scalar(0, 255, 0), 4);
             // // cv::Point p(face[i].x + face[i].width / 2, face[i].y + face[i].height / 2);
