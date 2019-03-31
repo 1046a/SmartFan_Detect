@@ -186,7 +186,7 @@ int SmartFan::state(double *alpha) {
             *alpha = 0.0;
             return 1;
         } else {
-            int d = position.first - _width;
+            int d = position.first - _width / 2;
             *alpha = _get_angle(d);
             return 2;
         }
@@ -196,7 +196,7 @@ int SmartFan::state(double *alpha) {
 }
 
 double SmartFan::_get_angle(int d) {
-    return atan2(d, _width / tan(_theta / 2));
+    return atan2(d, _width / 2 / tan(_theta / 2));
 }
 
 void SmartFan::set_iter(int iter) { _iter = iter; }
