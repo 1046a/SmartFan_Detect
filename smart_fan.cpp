@@ -17,10 +17,12 @@ SmartFan::SmartFan(): _state(false), _iter(10), _idleness(5) {
 
 bool SmartFan::power_up() {
     _capture.open(0); 
+    _state = false;
     return _capture.isOpened();
 }
 
 bool SmartFan::power_off() {
+    _state = false;
     _capture.release();
     return true;
 }
