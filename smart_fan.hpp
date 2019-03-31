@@ -24,7 +24,7 @@ public:
 
 private:
     bool _state;
-    int _idle, _iter, _idleness;
+    int _idle, _iter, _idleness, _width;
     double _theta;
     double _get_angle(int);
     std::pair<int, int> _detect();

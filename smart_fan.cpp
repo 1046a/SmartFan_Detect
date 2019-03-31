@@ -36,6 +36,8 @@ std::pair<int, int> SmartFan::_detect() {
     int iter = _iter;
     while (iter-- && _capture.read(frame)) {
 
+        _width = frame.cols;
+
         std::vector<cv::Rect> location = _dectector(frame);
         rects.insert(rects.end(), location.begin(), location.end());
 
@@ -184,7 +186,7 @@ int SmartFan::state(double *alpha) {
             *alpha = 0.0;
             return 1;
         } else {
-            int d = position.first - 512;
+            int d = position.first - _width;
             *alpha = _get_angle(d);
             return 2;
         }
@@ -194,7 +196,7 @@ int SmartFan::state(double *alpha) {
 }
 
 double SmartFan::_get_angle(int d) {
-    return atan2(d, 512 / tan(_theta / 2));
+    return atan2(d, _width / tan(_theta / 2));
 }
 
 void SmartFan::set_iter(int iter) { _iter = iter; }
